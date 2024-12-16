@@ -90,10 +90,10 @@ export function OrientadorProfile() {
                     // }} 
                 >
 
-                    {orientador}
+                    {localStorage.email}
                 </Typography>
             </Button>
-            <ProfileOrientadorDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} orientador={orientador} />
+            <ProfileOrientadorDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} orientador={localStorage.email} />
             <br/>
             
             <Typography
@@ -106,7 +106,7 @@ export function OrientadorProfile() {
                     padding: '50px'
                   }} 
             >
-                Citas del orientador {orientador}
+                Citas del orientador {localStorage.email}
             </Typography>
             <DataGrid
                 columns={columns}

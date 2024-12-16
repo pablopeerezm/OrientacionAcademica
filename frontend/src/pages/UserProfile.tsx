@@ -5,7 +5,7 @@ import { CreateDialog, ProfileUserDialog } from "../components/Dialog";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 
-export function Profile() {
+export function UserProfile() {
 
     const [user, setUser] = useState<string>("example@example.com")
 
@@ -75,10 +75,10 @@ export function Profile() {
                         color:'white'
                     }}
                 >
-                    {user}
+                    {localStorage.email}
                 </Typography>
             </Button>
-            <ProfileUserDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} user={user} />
+            <ProfileUserDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} user={localStorage.email} />
             <br/>
             
             <Typography
@@ -91,7 +91,7 @@ export function Profile() {
                     padding: '50px'
                   }} 
             >
-                Citas del usuario {user}
+                Citas del usuario {localStorage.email}
             </Typography>
             <DataGrid
                 columns={columns}

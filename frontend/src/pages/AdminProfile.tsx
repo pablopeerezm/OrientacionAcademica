@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CreateDialog, ProfileUserDialog, ProfileOrientadorDialog, CreateOrientadorDialog } from "../components/Dialog";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
+import { Orientador } from "../api/types";
 
 export function AdminProfile() {
 
@@ -11,6 +12,7 @@ export function AdminProfile() {
 
     const [dialogLogOutIsVisible, setDialogLogOutIsVisible] = useState<boolean>(false);
     const [dialogCreateIsVisible, setDialogCreateIsVisible] = useState<boolean>(false);
+    // const [orientadores, setOrientadores] = useState<Orientador[]>([]);
 
 
     const columns: GridColDef[] = [
@@ -40,6 +42,39 @@ export function AdminProfile() {
     function handleProfile() {
 
     }
+//     import React, { useEffect, useState } from 'react';
+// import api from '../api/axios';
+// import { Orientador } from '../api/types';
+
+// const Orientadores: React.FC = () => {
+   const [orientadores, setOrientadores] = useState<Orientador[]>([]);
+
+//   useEffect(() => {
+//     const fetchOrientadores = async () => {
+//       try {
+//         const response = await api.get<Orientador[]>('/admin/orientadores'); // Tipado de la respuesta
+//         setOrientadores(response.data); // Actualiza el estado con los datos recibidos
+//       } catch (error) {
+//         console.error('Error al obtener orientadores:', error);
+//       }
+//     };
+
+//     fetchOrientadores();
+//   }, []);
+
+//   return (
+//     <div>
+//       <h2>Lista de Orientadores</h2>
+//       <ul>
+//         {orientadores.map((orientador) => (
+//           <li key={orientador._id}>{orientador.email}</li>
+//         ))}
+//       </ul>
+//     </div>
+//   );
+// };
+
+// export default Orientadores;
 
     //   const rows: GridRowsProp = React.useMemo(() => {
     //     return procedures.map((procedure: Procedure) => (
@@ -80,10 +115,10 @@ export function AdminProfile() {
                     // }} 
                 >
 
-                    {admin}
+                    {localStorage.email}
                 </Typography>
             </Button>
-            <ProfileOrientadorDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} orientador={admin} />
+            <ProfileOrientadorDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} orientador={localStorage.email} />
             <br/>
             
             <Typography
@@ -96,7 +131,7 @@ export function AdminProfile() {
                     padding: '50px'
                   }} 
             >
-                Orientadores de {admin} 
+                Orientadores de {localStorage.email} 
             </Typography>
             <DataGrid
                 columns={columns}

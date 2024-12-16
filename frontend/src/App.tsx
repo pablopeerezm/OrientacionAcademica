@@ -15,12 +15,15 @@ import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material';
 import { Procedure } from './interfaces/Procedure';
 import { baseOptions } from './useGetProcedures';
-import { Profile } from './pages/UserProfile';
+import { UserProfile } from './pages/UserProfile';
 import {Header} from './components/Header';
 import { Home } from './pages/Home';
 import {Footer} from './components/Footer';
 import { OrientadorProfile } from './pages/OrientadorProfile';
 import { AdminProfile } from './pages/AdminProfile';
+import Calendar from './components/Calendar';
+import Prueba from './components/Prueba';
+import { Router, Routes, Route, BrowserRouter } from 'react-router-dom';
 
 interface ProcedureEditDto{
   versionLock?: number;
@@ -61,7 +64,7 @@ export default function App() {
   const [urlEdit, setUrlEdit] = useState<string>('')
   const [procedureId, setProcedureId] = useState<number>(0)
   const [postProc, setPostProc] = useState<boolean>(false)
-  
+  const [openCalendar, setOpenCalendar] = useState<boolean>(true)
   
   const {procedures, setProcedures, filasTotales} = useAppContext();
 
@@ -164,19 +167,28 @@ export default function App() {
 
   return (
     // <Container>
-      <Box className="App" sx={{width:'100%'}}>    
-        <Box>
-          <Home/>
-          {/* <Profile/> */}
-          {/* <OrientadorProfile/> */}
-          {/* <AdminProfile/> */}
-        </Box>      
-        {/* <Box>
-          <Profile/>
-        </Box> */}
-        {/* <br/> */}
-        {/* <Footer/> */}
-      </Box>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home/>} />
+        <Route path="/admin-profile" element={<AdminProfile/>} />
+        <Route path="/user-profile" element={<UserProfile/>} />
+        <Route path="/orientador-profile" element={<OrientadorProfile/>} />
+      </Routes>
+    </BrowserRouter>
+      // <Box className="App" sx={{width:'100%'}}>    
+      //   <Box>
+      //     {/* <Prueba/> */}
+      //     <Home/>
+      //     {/* <UserProfile/> */}
+      //     {/* <OrientadorProfile/> */}
+      //     {/* <AdminProfile/> */}
+      //   </Box>      
+      //   {/* <Box>
+      //     <Profile/>
+      //   </Box> */}
+      //   {/* <br/> */}
+      //   {/* <Footer/> */}
+      // </Box>
     // </Container>
   );
 }

@@ -7,6 +7,9 @@ import { baseOptions } from "../useGetProcedures"
 import * as yup from 'yup'
 import { useFormik } from "formik"
 import { editBaseOptions } from "../App"
+import { Email } from "@mui/icons-material"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 interface CreateDialogProps {
   openDialog: boolean; 
@@ -21,6 +24,11 @@ interface LoginDialogProps {
   // urlDialog: string;
   // clientId: number;
   // insertProcedure: () => void;
+}
+interface LoginProps {
+  open: boolean;
+  onClose: () => void;
+  onLogin: (email: string, password: string) => void;
 }
 interface SigninDialogProps {
   openDialog: boolean; 
@@ -49,8 +57,11 @@ interface ProfileAdminDialogProps {
 }
 
 export function ProfileUserDialog({openDialog, setOpenDialog, user}:ProfileUserDialogProps) {
+  const navigate = useNavigate()
   function handleLogOut() {
     // FALTA CODIGO CERRAR SESION
+    navigate('/')
+    localStorage.clear();
     setOpenDialog(false)
   }
   const handleClose = () => {
@@ -76,8 +87,11 @@ export function ProfileUserDialog({openDialog, setOpenDialog, user}:ProfileUserD
   );
 }
 export function ProfileOrientadorDialog({openDialog, setOpenDialog, orientador}:ProfileOrientadorDialogProps) {
+  const navigate = useNavigate()
   function handleLogOut() {
     // FALTA CODIGO CERRAR SESION
+    navigate('/')
+    localStorage.clear();
     setOpenDialog(false)
 
   }
@@ -106,8 +120,11 @@ export function ProfileOrientadorDialog({openDialog, setOpenDialog, orientador}:
   );
 }
 export function ProfileAdminDialog({openDialog, setOpenDialog, admin}:ProfileAdminDialogProps) {
+  const navigate = useNavigate()
   function handleLogOut() {
     // FALTA CODIGO CERRAR SESION
+    navigate('/')
+    localStorage.clear();
     setOpenDialog(false)
 
   }
@@ -135,10 +152,15 @@ export function ProfileAdminDialog({openDialog, setOpenDialog, admin}:ProfileAdm
       </Dialog>
   );
 }
-export function LoginDialog({openDialog, setOpenDialog}:LoginDialogProps) {
-  
-  const handleClose = () => {
-    setOpenDialog(false)
+// export function LoginDialog({openDialog, setOpenDialog}:LoginDialogProps) {
+export function LoginDialog({open, onClose, onLogin}:LoginProps) {
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+  // const handleClose = () => {
+  //   setOpenDialog(false)
+  // }
+  const handleLogin = () => {
+    onLogin(email, password);
   }
   const validationSchema = yup.object({
     email: yup.string().email('Ingrese un email válido').required('El nombre de usuario(email) es obligatorio'),
@@ -148,11 +170,20 @@ export function LoginDialog({openDialog, setOpenDialog}:LoginDialogProps) {
   const formik = useFormik({
     initialValues: {email: '', password: ''},
     validationSchema:validationSchema,
-    onSubmit: (values, {resetForm}) => {
-      alert(JSON.stringify(values, null, 2));
-      resetForm();
-      setOpenDialog(false);
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: async (values, {resetForm}) => {
+      try {
+        // alert(values.email + values.password)
+        await onLogin(values.email, values.password);
+        resetForm();
+        onClose();
+      } catch (error) {
+        alert('Error en el login')
+        console.error("Error en el login", error)
+      }
+      // alert(JSON.stringify(values, null, 2));
+      // resetForm();
+      // setOpenDialog(false);
+      // alert(JSON.stringify(values, null, 2));
 
         // const procedure: ProcedurePostDto = {clientId: clientId, name: formik.values.name, description: formik.values.description}
 
@@ -166,7 +197,7 @@ export function LoginDialog({openDialog, setOpenDialog}:LoginDialogProps) {
     },
   });
     return(
-      <Dialog open={openDialog} onClose={handleClose}>
+      <Dialog open={open} onClose={onClose}>
         <DialogTitle> Login</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -207,7 +238,7 @@ export function LoginDialog({openDialog, setOpenDialog}:LoginDialogProps) {
               </Button>
               <Button variant="contained" 
                       color="warning" 
-                      onClick={handleClose}
+                      onClick={onClose}
               >
                 Cancelar
               </Button>
@@ -470,3 +501,4 @@ export function CreateOrientadorDialog({openDialog, setOpenDialog}:CreateDialogP
         </Dialog>
       );
 }
+
