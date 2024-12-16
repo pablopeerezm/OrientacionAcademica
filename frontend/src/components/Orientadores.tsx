@@ -24,7 +24,7 @@ export function Orientadores() {
       <h2>Lista de Orientadores</h2>
       <ul>
         {orientadores.map((orientador) => (
-          <li key={orientador._id}>{orientador.email}</li>
+          <li key={orientador.id}>{orientador.email}</li>
         ))}
       </ul>
     </div>

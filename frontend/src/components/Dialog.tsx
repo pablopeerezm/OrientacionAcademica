@@ -465,11 +465,21 @@ export function CreateOrientadorDialog({openDialog, setOpenDialog}:CreateDialogP
   const formik = useFormik({
     initialValues: {email: '', password: ''},
     validationSchema:validationSchema,
-    onSubmit: (values, {resetForm}) => {
-      alert(JSON.stringify(values, null, 2));
-      resetForm();
-      setOpenDialog(false);
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: async (values, {resetForm}) => {
+      try {
+        const {email, password} = values;
+        // const response = await api.post('/auth/register', {
+        const response = await api.post('/auth/register', {
+          email,
+          password,
+          role: 'orientador'
+        });
+        alert('Registro de orientador completado con éxito')
+        resetForm();
+        setOpenDialog(false)
+      } catch(error) {
+        alert('Error en el registro del orientador')
+      }
     },
   });
   return(

@@ -1,5 +1,5 @@
 export interface Orientador {
-    _id: string;
+    id: string;
     email: string;
   }
   

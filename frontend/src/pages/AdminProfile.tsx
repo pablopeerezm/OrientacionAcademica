@@ -1,17 +1,36 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CreateDialog, ProfileUserDialog, ProfileOrientadorDialog, CreateOrientadorDialog } from "../components/Dialog";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Orientador } from "../api/types";
+import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
 
 export function AdminProfile() {
 
     const [admin, setAdmin] = useState<string>("admin@admin")
 
+   const [orientadores, setOrientadores] = useState<Orientador[]>([]);
+
+
     const [dialogLogOutIsVisible, setDialogLogOutIsVisible] = useState<boolean>(false);
     const [dialogCreateIsVisible, setDialogCreateIsVisible] = useState<boolean>(false);
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchOrientadores = async() => {
+            try{
+            const response = await api.get('/admin/orientadores')
+            setOrientadores(response.data)
+            } catch(error) {
+                alert("Error al obtener orientadores")
+            }
+        }
+        fetchOrientadores();
+
+    }, [setOrientadores])
     // const [orientadores, setOrientadores] = useState<Orientador[]>([]);
 
 
@@ -28,11 +47,15 @@ export function AdminProfile() {
             )
           }}
     ];
-    const rows: GridRowsProp = [
-        {id: 1, orientador: 'pepito@gmail.com'},
-        {id: 2, orientador: 'juanito@gmail.com'}
+    const rows: GridRowsProp = orientadores.map((orientador, index) => ({
+        id: index + 1,
+        orientador: orientador.email
+    }));
+    // const rows: GridRowsProp = [
+    //     {id: 1, orientador: 'pepito@gmail.com'},
+    //     {id: 2, orientador: 'juanito@gmail.com'}
         
-    ];
+    // ];
     function handleEditButton(id: number){
 
     }
@@ -46,21 +69,7 @@ export function AdminProfile() {
 // import api from '../api/axios';
 // import { Orientador } from '../api/types';
 
-// const Orientadores: React.FC = () => {
-   const [orientadores, setOrientadores] = useState<Orientador[]>([]);
 
-//   useEffect(() => {
-//     const fetchOrientadores = async () => {
-//       try {
-//         const response = await api.get<Orientador[]>('/admin/orientadores'); // Tipado de la respuesta
-//         setOrientadores(response.data); // Actualiza el estado con los datos recibidos
-//       } catch (error) {
-//         console.error('Error al obtener orientadores:', error);
-//       }
-//     };
-
-//     fetchOrientadores();
-//   }, []);
 
 //   return (
 //     <div>
