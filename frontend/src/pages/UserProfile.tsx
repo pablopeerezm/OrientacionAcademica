@@ -1,9 +1,10 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CreateDialog, ProfileUserDialog } from "../components/Dialog";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
+import api from "../api/axios";
 
 export function UserProfile() {
 
@@ -11,6 +12,7 @@ export function UserProfile() {
 
     const [dialogLogOutIsVisible, setDialogLogOutIsVisible] = useState<boolean>(false);
     const [dialogCreateIsVisible, setDialogCreateIsVisible] = useState<boolean>(false);
+    const [citas, setCitas] = useState<any[]>([]);
 
 
     const columns: GridColDef[] = [
@@ -31,26 +33,47 @@ export function UserProfile() {
             )
           }}
     ];
-    const rows: GridRowsProp = [
-        { id: 1, orientador: 'Juan Pérez', dia: 'Lunes', hora: '09:00' },
-        { id: 2, orientador: 'Ana López', dia: 'Martes', hora: '10:30' },
-        { id: 3, orientador: 'Carlos García', dia: 'Miércoles', hora: '14:00' },
-    ];
+
+useEffect(() => {
+    const fetchCitas = async () => {
+        try {
+            const response = await api.get(`/citas/${sessionStorage.email}`, {
+                headers: {
+                    'Authorization' : `Bearer ${sessionStorage.jwt}`
+                }
+            });
+            setCitas(response.data);
+            console.log(response.data)
+        } catch (error) {
+            console.log("Error al obtener citas", error)
+        }
+    };
+    fetchCitas();
+}, [])
+
+    const rows: GridRowsProp = citas.map((cita, index) => ({
+        id : index + 1,
+        orientador : cita.orientador_email,
+        dia : cita.fecha,
+        hora: cita.hora
+
+    }))
     function handleEditButton(id: number){
 
     }
-    function handleDeleteButton(id: number){
+    const handleDeleteButton = async (id: number) => {
+        try {
+            const citaId = citas[id - 1]._id;
+            alert(citaId)
+            await api.delete(`/citas/${citaId}`);
+            alert("Cita eliminada correctamente.");
+        } catch (error) {
+            console.error("Error al eliminar la cita:", error);
+            alert("Error al eliminar la cita.");
+        }
         
     }
-
-    //   const rows: GridRowsProp = React.useMemo(() => {
-    //     return procedures.map((procedure: Procedure) => (
-    //     {
-    //       id:procedure.key,
-    //       name: procedure.name,
-    //       description: procedure.description
-    //     })
-    //   )}, [procedures])    
+ 
     return (
         <Box className="profilePage" >
             <Header/>
@@ -75,10 +98,10 @@ export function UserProfile() {
                         color:'white'
                     }}
                 >
-                    {localStorage.email}
+                    {sessionStorage.email}
                 </Typography>
             </Button>
-            <ProfileUserDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} user={localStorage.email} />
+            <ProfileUserDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} user={sessionStorage.email} />
             <br/>
             
             <Typography
@@ -91,7 +114,7 @@ export function UserProfile() {
                     padding: '50px'
                   }} 
             >
-                Citas del usuario {localStorage.email}
+                Citas del usuario {sessionStorage.email}
             </Typography>
             <DataGrid
                 columns={columns}

@@ -8,7 +8,7 @@ import * as yup from 'yup'
 import { useFormik } from "formik"
 import { editBaseOptions } from "../App"
 import { Email } from "@mui/icons-material"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import api from "../api/axios"
 
@@ -62,7 +62,7 @@ export function ProfileUserDialog({openDialog, setOpenDialog, user}:ProfileUserD
   function handleLogOut() {
     // FALTA CODIGO CERRAR SESION
     navigate('/')
-    localStorage.clear();
+    sessionStorage.clear();
     setOpenDialog(false)
   }
   const handleClose = () => {
@@ -92,7 +92,7 @@ export function ProfileOrientadorDialog({openDialog, setOpenDialog, orientador}:
   function handleLogOut() {
     // FALTA CODIGO CERRAR SESION
     navigate('/')
-    localStorage.clear();
+    sessionStorage.clear();
     setOpenDialog(false)
 
   }
@@ -125,7 +125,7 @@ export function ProfileAdminDialog({openDialog, setOpenDialog, admin}:ProfileAdm
   function handleLogOut() {
     // FALTA CODIGO CERRAR SESION
     navigate('/')
-    localStorage.clear();
+    sessionStorage.clear();
     setOpenDialog(false)
 
   }
@@ -346,14 +346,22 @@ export function SigninDialog({openDialog, setOpenDialog}:LoginDialogProps) {
     );
 }
 export function CreateDialog({openDialog, setOpenDialog}:CreateDialogProps) {
-  const orientadores = [
-    { id: '1', name: 'Juan Pérez' },
-    { id: '2', name: 'María Gómez' },
-    { id: '3', name: 'Carlos Díaz' }
-  ];  
-  const horasDisponibles = [
-    '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM'
-  ];
+  const [orientadores, setOrientadores] = useState<string[]>([]);
+  const horasDisponibles = ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM'];
+  
+  useEffect(() => {
+    const fetchOrientadores = async () => {
+      try {
+        const response = await api.get('admin/orientadores2');
+        const emails = response.data.map((orientador: {email: string}) => orientador.email)
+        setOrientadores(emails)
+      } catch(error) {
+        alert("Error al obtener orientadores para dar la cita")
+      } 
+    };
+    fetchOrientadores();
+  }, []);
+
   const handleClose = () => {
     setOpenDialog(false)
   }
@@ -365,21 +373,25 @@ export function CreateDialog({openDialog, setOpenDialog}:CreateDialogProps) {
   const formik = useFormik({
     initialValues: {orientador: '', dia: '', hora: ''},
     validationSchema:validationSchema,
-    onSubmit: (values, {resetForm}) => {
-      alert(JSON.stringify(values, null, 2));
-      resetForm();
-      setOpenDialog(false);
-          // alert(JSON.stringify(values, null, 2));
-  
-          // const procedure: ProcedurePostDto = {clientId: clientId, name: formik.values.name, description: formik.values.description}
-  
-          // const options = {
-          //   ...baseOptions,
-          //   body: JSON.stringify(procedure)
-          // }
-          // fetch(urlDialog, options)
-          // resetForm()
-          // setOpenDialog(false)
+    onSubmit: async (values, {resetForm}) => {
+      try {
+        const cita = {alumno_email: sessionStorage.email, orientador_email: values.orientador, 
+                      fecha: values.dia, hora: values.hora}
+        alert(`${sessionStorage.email} ${values.orientador} ${values.dia} ${values.hora}`)
+                      await api.post('/citas/', cita, {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.jwt}`
+          }
+        });
+        alert('Cita creada correctamente')
+        resetForm()
+        setOpenDialog(false)
+
+      } catch (error) {
+        alert('Error al crear la cita')
+        
+      }
+          
     },
   });
   return(
@@ -400,9 +412,9 @@ export function CreateDialog({openDialog, setOpenDialog}:CreateDialogProps) {
                 onBlur={formik.handleBlur}
                 label="Orientador"
               >
-                {orientadores.map((orientador) => (
-                  <MenuItem key={orientador.id} value={orientador.id}>
-                    {orientador.name}
+                {orientadores.map((email, index) => (
+                  <MenuItem key={index} value={email}>
+                    {email}
                   </MenuItem>
                 ))}
               </Select>

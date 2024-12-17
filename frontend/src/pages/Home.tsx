@@ -28,22 +28,20 @@ export function Home() {
                 const data = response.data;
                 if (response.status === 200) {
                 // alert(`Login exitoso: ${data.token} ${data.role}`)
-                localStorage.setItem("jwt", data.token)
-                localStorage.setItem("role", data.role)
-                localStorage.setItem("email", email)
-                alert(`Login exitoso: ${localStorage.role} ${data.token} ${data.role} ${email}`)
-                if (localStorage.role === 'admin') {
+                sessionStorage.setItem("jwt", data.token)
+                sessionStorage.setItem("role", data.role)
+                sessionStorage.setItem("email", email)
+                alert(`Login exitoso: ${sessionStorage.role} ${sessionStorage.email} ${sessionStorage.jwt}`)
+                if (sessionStorage.role === 'admin') {
                     navigate('/admin-profile');  // Redirigir a AdminProfile
                     // alert("aqui")
-                  } else if (localStorage.role === 'alumno') {
+                  } else if (sessionStorage.role === 'alumno') {
                     navigate('/user-profile');  // Redirigir a UserProfile
-                  } else if (localStorage.role === 'orientador') {
+                  } else if (sessionStorage.role === 'orientador') {
                     navigate('/orientador-profile');  // Redirigir a OrientadorProfile
                   }
 
                 }
-        //         const data = response.data;
-        //         alert(data)
             }).catch((error) => {
                 if (error.response) {
                     console.error("Error en la respuesta:", error.response);
@@ -56,37 +54,7 @@ export function Home() {
                     alert(`Error desconocido: ${error.message}`);
                   }
             })
-        // try {axios.post('/auth/login', {email, password})}
-        // catch(error) {
-        //     alert("error")
-        // }
-        // try {
-        //     const response = await axios.post('/auth/login', {email, password});
-        //     alert(response)
-        //     const data = await response;
-        //     // alert(response)
-
-        //     const {role, token} = response.data;
-        //     // alert(response.data)
-        //     localStorage.setItem('token', token);
-        //     localStorage.setItem('role', role);
-            // if (role === 'admin') {
-            //     navigate('/admin-profile');  // Redirigir a AdminProfile
-            //     alert("aqui")
-            //   } else if (role === 'alumno') {
-            //     navigate('/user-profile');  // Redirigir a UserProfile
-            //   } else if (role === 'orientador') {
-            //     navigate('/orientador-profile');  // Redirigir a OrientadorProfile
-            //   }
-        // } catch(error: unknown) {
-        //     if (isAxiosError(error)) {
-        //     console.error('Error al iniciar sesión:', error.response?.data || error.message);
-
-        //     } else {
-        //         alert('Credenciales incorrectas');
-
-        //     }
-        // }
+        
     }
     function handleSignin() {
         setDialogSigninIsVisible(true)

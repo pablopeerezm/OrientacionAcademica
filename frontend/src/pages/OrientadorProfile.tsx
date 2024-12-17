@@ -1,9 +1,10 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CreateDialog, ProfileUserDialog, ProfileOrientadorDialog } from "../components/Dialog";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
+import api from "../api/axios";
 
 export function OrientadorProfile() {
 
@@ -11,10 +12,11 @@ export function OrientadorProfile() {
 
     const [dialogLogOutIsVisible, setDialogLogOutIsVisible] = useState<boolean>(false);
     const [dialogCreateIsVisible, setDialogCreateIsVisible] = useState<boolean>(false);
+    const [citas, setCitas] = useState<any[]>([]);
 
 
     const columns: GridColDef[] = [
-        {field:'user', headerName:'User', flex:2},
+        {field:'alumno', headerName:'Alumno', flex:2},
         {field:'dia', headerName:'Dia', flex:2},
         {field:'hora', headerName:'Hora', flex:2},
         {field:'actions', headerName:'Acciones', width:180, renderCell: (params) => {
@@ -31,29 +33,43 @@ export function OrientadorProfile() {
             )
           }}
     ];
-    const rows: GridRowsProp = [
-        { id: 1, user: 'Juan Pérez', dia: 'Lunes', hora: '09:00' },
-        { id: 2, user: 'Ana López', dia: 'Martes', hora: '10:30' },
-        { id: 3, user: 'Carlos García', dia: 'Miércoles', hora: '14:00' },
-    ];
+    useEffect(() => {
+        const fetchCitas = async () => {
+            try {
+                const response = await api.get(`/citas/${sessionStorage.email}`, {
+                    headers: {
+                        'Authorization' : `Bearer ${sessionStorage.jwt}`
+                    }
+                });
+                setCitas(response.data);
+                console.log(response.data)
+            } catch (error) {
+                console.log("Error al obtener citas", error)
+            }
+        };
+        fetchCitas();
+    }, [])
+    const rows: GridRowsProp = citas.map((cita, index) => ({
+        id: index + 1,
+        alumno: cita.alumno_email,
+        dia: cita.fecha,
+        hora: cita.hora
+    }))
     function handleEditButton(id: number){
 
     }
-    function handleDeleteButton(id: number){
-        
+    const handleDeleteButton= async (id: number) => {
+        try {
+            const citaId = citas[id - 1]._id;
+            alert(citaId)
+            await api.delete(`/citas/${citaId}`);
+            alert("Cita eliminada correctamente.");
+        } catch (error) {
+            console.error("Error al eliminar la cita:", error);
+            alert("Error al eliminar la cita.");
+        }
     }
-    function handleProfile() {
-
-    }
-
-    //   const rows: GridRowsProp = React.useMemo(() => {
-    //     return procedures.map((procedure: Procedure) => (
-    //     {
-    //       id:procedure.key,
-    //       name: procedure.name,
-    //       description: procedure.description
-    //     })
-    //   )}, [procedures])    
+    
     return (
         <Box className="profilePage" >
             <Header/>
@@ -90,10 +106,10 @@ export function OrientadorProfile() {
                     // }} 
                 >
 
-                    {localStorage.email}
+                    {sessionStorage.email}
                 </Typography>
             </Button>
-            <ProfileOrientadorDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} orientador={localStorage.email} />
+            <ProfileOrientadorDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} orientador={sessionStorage.email} />
             <br/>
             
             <Typography
@@ -106,7 +122,7 @@ export function OrientadorProfile() {
                     padding: '50px'
                   }} 
             >
-                Citas del orientador {localStorage.email}
+                Citas del orientador {sessionStorage.email}
             </Typography>
             <DataGrid
                 columns={columns}
