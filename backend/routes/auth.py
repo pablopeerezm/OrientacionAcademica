@@ -1,11 +1,15 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, Flask, request, jsonify
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token
 from bson import ObjectId
 from extensions import mongo
+from flask_cors import CORS
 
 auth_bp = Blueprint('auth', __name__)
 bcrypt = Bcrypt()
+
+app = Flask(__name__)
+CORS(app, origins=["http://localhost:3000"], methods=["POST"])
 
 # Registro
 @auth_bp.route('/register', methods=['POST'])

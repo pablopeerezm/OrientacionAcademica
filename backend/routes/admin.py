@@ -5,6 +5,7 @@ from bson import ObjectId
 
 admin_bp = Blueprint('admin', __name__)
 
+# Create orientador
 @admin_bp.route('/orientadores', methods=['POST'])
 @role_required('admin')
 def add_orientador():
@@ -20,18 +21,30 @@ def add_orientador():
     })
     return jsonify({"message": "Orientador añadido"}), 201
 
-@admin_bp.route('/orientadores/<id>', methods=['DELETE'])
+# Delete orientador
+@admin_bp.route('/orientadores/<email>', methods=['DELETE'])
 @role_required('admin')
-def delete_orientador(id):
-    mongo.db.users.delete_one({"_id": ObjectId(id)})
+def delete_orientador(email):
+    result = mongo.db.users.delete_one({"email": email})
+    if result.deleted_count == 0:
+        return jsonify({"message": "Orientador no encontrado"}), 404
     return jsonify({"message": "Orientador eliminado"}), 200
 
-
+# Read orientadores
 @admin_bp.route('/orientadores', methods=['GET'])
 @role_required('admin')
 def get_orientadores():
     orientadores = [
         {"_id": str(orientador["_id"]), "email": orientador["email"]}
+        for orientador in mongo.db.users.find({"role": "orientador"}, {"_id": 1, "email": 1})
+]
+    return jsonify(orientadores), 200
+
+# Read orientadores from user
+@admin_bp.route('/orientadores2', methods=['GET'])
+def get_orientadores2():
+    orientadores = [
+        { "email": orientador["email"]}
         for orientador in mongo.db.users.find({"role": "orientador"}, {"_id": 1, "email": 1})
 ]
     return jsonify(orientadores), 200
