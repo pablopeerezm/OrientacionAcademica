@@ -40,7 +40,7 @@ def get_orientadores():
 ]
     return jsonify(orientadores), 200
 
-# Read orientadores from user
+# Read orientadores for alumno
 @admin_bp.route('/orientadores2', methods=['GET'])
 def get_orientadores2():
     orientadores = [
@@ -48,3 +48,12 @@ def get_orientadores2():
         for orientador in mongo.db.users.find({"role": "orientador"}, {"_id": 1, "email": 1})
 ]
     return jsonify(orientadores), 200
+
+# Read alumnos for orientador
+@admin_bp.route('/alumnos', methods=['GET'])
+def alumnos():
+    alumnos = [
+        { "email": alumno["email"]}
+        for alumno in mongo.db.users.find({"role": "alumno"}, {"_id": 1, "email": 1})
+]
+    return jsonify(alumnos), 200

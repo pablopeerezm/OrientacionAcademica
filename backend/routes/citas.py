@@ -31,11 +31,11 @@ def create_cita():
     mongo.db.citas.insert_one(cita)
     alumno_update_result = mongo.db.users.update_one(
         {"email": data['alumno_email']},
-        {"$push": {"citas": cita}}  # Añadir cita al array "citas"
+        {"$push": {"citas": cita}}  
     )
     orientador_update_result = mongo.db.users.update_one(
         {"email": data['orientador_email']},
-        {"$push": {"citas": cita}}  # Añadir cita al array "citas"
+        {"$push": {"citas": cita}}  
     )
     if alumno_update_result.modified_count == 0:
         return jsonify({"message": "No se encontró el alumno o no se pudo agregar la cita"}), 400
@@ -64,3 +64,42 @@ def delete_cita(id):
         return jsonify({"message": "Cita eliminada correctamente"}), 200
     except Exception as e:
                 return jsonify({"message": f"Error al eliminar la cita: {str(e)}"}), 500
+
+# Update cita
+@citas_bp.route('/<id>', methods=['PUT'])
+def update_cita(id):
+    try:
+        if not ObjectId.is_valid(id):
+            return jsonify({"message": "ID de cita no válido"}), 400
+
+        cita = mongo.db.citas.find_one({"_id": ObjectId(id)})
+        if not cita:
+            return jsonify({"message": "Cita no encontrada"}), 404
+
+        data = request.json
+        nuevo_dia = data.get("fecha")
+        nueva_hora = data.get("hora")
+
+        if not nuevo_dia or not nueva_hora:
+            return jsonify({"message": "Debe proporcionar 'fecha' y 'hora' para actualizar la cita"}), 400
+
+        mongo.db.citas.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": {"fecha": nuevo_dia, "hora": nueva_hora}}
+        )
+
+        mongo.db.users.update_one(
+            {"email": cita["alumno_email"], "citas._id": ObjectId(id)},
+            {"$set": {"citas.$.fecha": nuevo_dia, "citas.$.hora": nueva_hora}}
+        )
+
+        mongo.db.users.update_one(
+            {"email": cita["orientador_email"], "citas._id": ObjectId(id)},
+            {"$set": {"citas.$.fecha": nuevo_dia, "citas.$.hora": nueva_hora}}
+        )
+
+        return jsonify({"message": "Cita actualizada correctamente"}), 200
+
+    except Exception as e:
+        print(f"Error al actualizar la cita: {str(e)}")  # Log para depuración
+        return jsonify({"message": f"Error al actualizar la cita: {str(e)}"}), 500
