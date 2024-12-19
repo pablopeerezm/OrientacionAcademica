@@ -1,19 +1,18 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
-import { CreateDialog, ProfileUserDialog, ProfileOrientadorDialog } from "../components/Dialog";
+import { ProfileUserDialog, EditCitaDialog, CreateCitaOrientador } from "../components/Dialog";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import api from "../api/axios";
 
 export function OrientadorProfile() {
 
-    const [orientador, setOrientador] = useState<string>("example@example.com")
-
     const [dialogLogOutIsVisible, setDialogLogOutIsVisible] = useState<boolean>(false);
     const [dialogCreateIsVisible, setDialogCreateIsVisible] = useState<boolean>(false);
     const [citas, setCitas] = useState<any[]>([]);
-
+    const [dialogEditIsVisible, setDialogEditIsVisible] = useState<boolean>(false);
+    const [selectedCita, setSelectedCita] = useState<any>(null);
 
     const columns: GridColDef[] = [
         {field:'alumno', headerName:'Alumno', flex:2},
@@ -56,7 +55,9 @@ export function OrientadorProfile() {
         hora: cita.hora
     }))
     function handleEditButton(id: number){
-
+        const citaToEdit = citas[id - 1];
+        setSelectedCita(citaToEdit)
+        setDialogEditIsVisible(true)
     }
     const handleDeleteButton= async (id: number) => {
         try {
@@ -69,26 +70,37 @@ export function OrientadorProfile() {
             alert("Error al eliminar la cita.");
         }
     }
+    const handleSaveEdit = async (updatedCita: { fecha: string; hora: string }) => {
+        try {
+            const citaId = selectedCita._id;
+            await api.put(`/citas/${citaId}`, updatedCita, {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.jwt}`,
+                },
+            });
+            const updatedCitas = citas.map((cita) =>
+                cita._id === citaId ? { ...cita, ...updatedCita } : cita
+            );
+            setCitas(updatedCitas);
+            alert('Cita actualizada correctamente.');
+        } catch (error) {
+            console.error('Error al actualizar la cita:', error);
+            alert('Error al actualizar la cita.');
+        }
+    };
     
     return (
         <Box className="profilePage" >
             <Header/>
             <Button className="Orientador" 
                     variant="contained" 
-                    // color="warning" 
                     onClick={() => setDialogLogOutIsVisible(true)}
-                    // onClick={handleProfile}
                     sx={{display:'flex', 
                         justifyContent:'flex-end', 
-                        // width:'fit',
-                        // align:'right',
-                        // margin: 'left-auto',
-
                         backgroundColor:'transparent',
                         boxShadow:'none',
                         width:'100%'
-                        
-                        }}>
+                    }}>
                 <Typography
                     variant="h6"
                     align="right"
@@ -97,19 +109,11 @@ export function OrientadorProfile() {
                         padding: '5px 5px',
                         color:'white'
                     }}
-                
-                    // sx={{
-                    //     backgroundColor: 'darkblue',
-                    //     color:'white',
-                    //     borderRadius: '20px',
-                    //     padding: '50px'
-                    // }} 
                 >
-
                     {sessionStorage.email}
                 </Typography>
             </Button>
-            <ProfileOrientadorDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} orientador={sessionStorage.email} />
+            <ProfileUserDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} user={sessionStorage.email} />
             <br/>
             
             <Typography
@@ -129,16 +133,9 @@ export function OrientadorProfile() {
                 rows={rows}
                 autoHeight
                 pagination
-                // pageSizeOptions ={[5, 10]} 
-                // page={5}
-                // sx={{
-                //     display: 'flex',
-                //     justifyContent: 'center',
-                //     alignItems: 'center',
-                // }}
-
             />
-            <CreateDialog openDialog={dialogCreateIsVisible} setOpenDialog={setDialogCreateIsVisible} /* urlDialog={urlPost} clientId={clientId}*/  />
+            <CreateCitaOrientador openDialog={dialogCreateIsVisible} setOpenDialog={setDialogCreateIsVisible} /* urlDialog={urlPost} clientId={clientId}*/  />
+            <EditCitaDialog open={dialogEditIsVisible} handleClose={() => setDialogEditIsVisible(false)} cita={selectedCita} onSave={handleSaveEdit} />
             <Button variant="contained" 
                     color="warning" 
                     onClick={() => setDialogCreateIsVisible(true)}
@@ -146,7 +143,6 @@ export function OrientadorProfile() {
                 Crear cita
             </Button>
             <Footer/>
-
         </Box>
     )
 }

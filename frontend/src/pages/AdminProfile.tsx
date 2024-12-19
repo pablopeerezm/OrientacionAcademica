@@ -1,7 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
-import { ProfileOrientadorDialog, CreateOrientadorDialog } from "../components/Dialog";
+import { CreateOrientadorDialog, ProfileUserDialog } from "../components/Dialog";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Orientador } from "../api/types";
@@ -80,7 +80,7 @@ export function AdminProfile() {
                     {sessionStorage.email}
                 </Typography>
             </Button>
-            <ProfileOrientadorDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} orientador={sessionStorage.email} />
+            <ProfileUserDialog openDialog={dialogLogOutIsVisible} setOpenDialog={setDialogLogOutIsVisible} user={sessionStorage.email} />
             <br/>
             <Typography
                 variant="h5"

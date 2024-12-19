@@ -3,28 +3,16 @@ import TextField from "@mui/material/TextField"
 import Button from "@mui/material/Button"
 import { Box, Dialog, DialogContent, DialogContentText, DialogTitle, FormControl, InputLabel, MenuItem, Select } from "@mui/material"
 
-import { baseOptions } from "../useGetProcedures"
 import * as yup from 'yup'
 import { useFormik } from "formik"
-import { editBaseOptions } from "../App"
-import { Email } from "@mui/icons-material"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import api from "../api/axios"
+import React from "react"
 
 interface CreateDialogProps {
   openDialog: boolean; 
   setOpenDialog: (arg: boolean) => void;
-  // urlDialog: string;
-  // clientId: number;
-  // insertProcedure: () => void;
-}
-interface LoginDialogProps {
-  openDialog: boolean; 
-  setOpenDialog: (arg: boolean) => void;
-  // urlDialog: string;
-  // clientId: number;
-  // insertProcedure: () => void;
 }
 interface LoginProps {
   open: boolean;
@@ -34,33 +22,22 @@ interface LoginProps {
 interface SigninDialogProps {
   openDialog: boolean; 
   setOpenDialog: (arg: boolean) => void;
-  // urlDialog: string;
-  // clientId: number;
-  // insertProcedure: () => void;
 }
 interface ProfileUserDialogProps {
   openDialog: boolean; 
   setOpenDialog: (arg: boolean) => void;
   user: string;
-  // insertProcedure: () => void;
 }
-interface ProfileOrientadorDialogProps {
-  openDialog: boolean; 
-  setOpenDialog: (arg: boolean) => void;
-  orientador: string;
-  // insertProcedure: () => void;
-}
-interface ProfileAdminDialogProps {
-  openDialog: boolean; 
-  setOpenDialog: (arg: boolean) => void;
-  admin: string;
-  // insertProcedure: () => void;
+interface EditCitaDialogProps {
+  open: boolean;
+  handleClose: () => void;
+  cita: any;
+  onSave: (updatedCita: {fecha: string, hora:string}) => void;
 }
 
 export function ProfileUserDialog({openDialog, setOpenDialog, user}:ProfileUserDialogProps) {
   const navigate = useNavigate()
   function handleLogOut() {
-    // FALTA CODIGO CERRAR SESION
     navigate('/')
     sessionStorage.clear();
     setOpenDialog(false)
@@ -87,79 +64,9 @@ export function ProfileUserDialog({openDialog, setOpenDialog, user}:ProfileUserD
       </Dialog>
   );
 }
-export function ProfileOrientadorDialog({openDialog, setOpenDialog, orientador}:ProfileOrientadorDialogProps) {
-  const navigate = useNavigate()
-  function handleLogOut() {
-    // FALTA CODIGO CERRAR SESION
-    navigate('/')
-    sessionStorage.clear();
-    setOpenDialog(false)
-
-  }
-  const handleClose = () => {
-    setOpenDialog(false)
-  }
-
-  return(
-      <Dialog open={openDialog} onClose={handleClose}>
-        <DialogTitle align="center"> Perfil</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Hola, {orientador}
-            <br/>
-            <br/>
-          </DialogContentText>
-          <Button variant="contained" 
-                  color="warning" 
-                  type="submit" 
-                  onClick={handleLogOut}
-                  style={{display:'flex', width:'100%'}}>
-            Cerrar sesion
-          </Button>
-        </DialogContent>
-      </Dialog>
-  );
-}
-export function ProfileAdminDialog({openDialog, setOpenDialog, admin}:ProfileAdminDialogProps) {
-  const navigate = useNavigate()
-  function handleLogOut() {
-    // FALTA CODIGO CERRAR SESION
-    navigate('/')
-    sessionStorage.clear();
-    setOpenDialog(false)
-
-  }
-  const handleClose = () => {
-    setOpenDialog(false)
-  }
-
-  return(
-      <Dialog open={openDialog} onClose={handleClose}>
-        <DialogTitle align="center"> Perfil</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Hola, {admin}
-            <br/>
-            <br/>
-          </DialogContentText>
-          <Button variant="contained" 
-                  color="warning" 
-                  type="submit" 
-                  onClick={handleLogOut}
-                  style={{display:'flex', width:'100%'}}>
-            Cerrar sesion
-          </Button>
-        </DialogContent>
-      </Dialog>
-  );
-}
-// export function LoginDialog({openDialog, setOpenDialog}:LoginDialogProps) {
 export function LoginDialog({open, onClose, onLogin}:LoginProps) {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
-  // const handleClose = () => {
-  //   setOpenDialog(false)
-  // }
   const handleLogin = () => {
     onLogin(email, password);
   }
@@ -173,7 +80,6 @@ export function LoginDialog({open, onClose, onLogin}:LoginProps) {
     validationSchema:validationSchema,
     onSubmit: async (values, {resetForm}) => {
       try {
-        // alert(values.email + values.password)
         await onLogin(values.email, values.password);
         resetForm();
         onClose();
@@ -181,20 +87,6 @@ export function LoginDialog({open, onClose, onLogin}:LoginProps) {
         alert('Error en el login')
         console.error("Error en el login", error)
       }
-      // alert(JSON.stringify(values, null, 2));
-      // resetForm();
-      // setOpenDialog(false);
-      // alert(JSON.stringify(values, null, 2));
-
-        // const procedure: ProcedurePostDto = {clientId: clientId, name: formik.values.name, description: formik.values.description}
-
-        // const options = {
-        //   ...baseOptions,
-        //   body: JSON.stringify(procedure)
-        // }
-        // fetch(urlDialog, options)
-        // resetForm()
-        // setOpenDialog(false)
     },
   });
     return(
@@ -249,7 +141,7 @@ export function LoginDialog({open, onClose, onLogin}:LoginProps) {
       </Dialog>
     );
 }
-export function SigninDialog({openDialog, setOpenDialog}:LoginDialogProps) {
+export function SigninDialog({openDialog, setOpenDialog}:SigninDialogProps) {
   
   const handleClose = () => {
     setOpenDialog(false)
@@ -348,6 +240,7 @@ export function SigninDialog({openDialog, setOpenDialog}:LoginDialogProps) {
 export function CreateDialog({openDialog, setOpenDialog}:CreateDialogProps) {
   const [orientadores, setOrientadores] = useState<string[]>([]);
   const horasDisponibles = ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM'];
+  const fechaActual = new Date().toISOString().split("T")[0];
   
   useEffect(() => {
     const fetchOrientadores = async () => {
@@ -386,12 +279,9 @@ export function CreateDialog({openDialog, setOpenDialog}:CreateDialogProps) {
         alert('Cita creada correctamente')
         resetForm()
         setOpenDialog(false)
-
       } catch (error) {
         alert('Error al crear la cita')
-        
       }
-          
     },
   });
   return(
@@ -433,6 +323,131 @@ export function CreateDialog({openDialog, setOpenDialog}:CreateDialogProps) {
                 onBlur={formik.handleBlur}
                 InputLabelProps={{
                   shrink: true,
+                }}
+                inputProps={{
+                  min: fechaActual,
+                }}
+                fullWidth
+                error={formik.touched.dia && Boolean(formik.errors.dia)}
+                helperText={formik.touched.dia && formik.errors.dia}
+              />
+              <FormControl fullWidth margin="dense" error={formik.touched.hora && Boolean(formik.errors.hora)}>
+                <InputLabel>Hora</InputLabel>
+                <Select
+                  id="hora"
+                  name="hora"
+                  value={formik.values.hora}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  label="Hora"
+                >
+                  {horasDisponibles.map((hora, index) => (
+                    <MenuItem key={index} value={hora}>
+                      {hora}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {formik.touched.hora && formik.errors.hora && (
+                  <Box color="error.main" mt={1}>{formik.errors.hora}</Box>
+                )}
+              </FormControl>
+                <Button variant="contained" color="warning" type="submit">Guardar</Button>
+                <Button variant="contained" color="warning" onClick={handleClose}>Cancelar</Button>
+              </form> 
+            </DialogContent>
+          </Dialog>
+      );
+}
+export function CreateCitaOrientador({openDialog, setOpenDialog}:CreateDialogProps) {
+  const [alumnos, setAlumnos] = useState<string[]>([]);
+  const horasDisponibles = ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM'];
+  const fechaActual = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    const fetchAlumnos = async () => {
+      try {
+        const response = await api.get('admin/alumnos');
+        const emails = response.data.map((alumno: {email: string}) => alumno.email)
+        setAlumnos(emails)
+      } catch(error) {
+        alert("Error al obtener alumnos para dar la cita")
+      } 
+    };
+    fetchAlumnos();
+  }, []);
+
+  const handleClose = () => {
+    setOpenDialog(false)
+  }
+  const validationSchema = yup.object({
+    alumno: yup.string().required('Seleccionar alumno es obligatorio'),
+    dia: yup.string().required('Seleccionar un día es obligatorio'),
+    hora: yup.string().required('Seleccionar una hora es obligatorio'),
+  })
+  const formik = useFormik({
+    initialValues: {alumno: '', dia: '', hora: ''},
+    validationSchema:validationSchema,
+    onSubmit: async (values, {resetForm}) => {
+      try {
+        const cita = {alumno_email: values.alumno, orientador_email: sessionStorage.email, 
+                      fecha: values.dia, hora: values.hora}
+        alert(`${sessionStorage.email} ${values.alumno} ${values.dia} ${values.hora}`)
+                      await api.post('/citas/', cita, {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.jwt}`
+          }
+        });
+        alert('Cita creada correctamente')
+        resetForm()
+        setOpenDialog(false)
+
+      } catch (error) {
+        alert('Error al crear la cita')
+      }
+    },
+  });
+  return(
+    <Dialog open={openDialog} onClose={handleClose}>
+      <DialogTitle> Procedimiento</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Rellene los siguientes campos para concertar una cita
+        </DialogContentText>
+        <form onSubmit={formik.handleSubmit}>
+          <FormControl fullWidth margin="dense" error={formik.touched.alumno && Boolean(formik.errors.alumno)}>
+            <InputLabel>Alumno</InputLabel>
+              <Select
+                id="alumno"
+                name="alumno"
+                value={formik.values.alumno}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                label="Alumno"
+              >
+                {alumnos.map((email, index) => (
+                  <MenuItem key={index} value={email}>
+                    {email}
+                  </MenuItem>
+                ))}
+              </Select>
+                {formik.touched.alumno && formik.errors.alumno && (
+                  <Box color="error.main" mt={1}>{formik.errors.alumno}</Box>
+                )}
+              </FormControl>
+              <TextField
+                margin="dense"
+                id="dia"
+                name="dia"
+                label="Día"
+                type="date"
+                value={formik.values.dia}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                inputProps={{
+                  min: fechaActual,
                 }}
                 fullWidth
                 error={formik.touched.dia && Boolean(formik.errors.dia)}
@@ -480,7 +495,6 @@ export function CreateOrientadorDialog({openDialog, setOpenDialog}:CreateDialogP
     onSubmit: async (values, {resetForm}) => {
       try {
         const {email, password} = values;
-        // const response = await api.post('/auth/register', {
         const response = await api.post('/auth/register', {
           email,
           password,
@@ -538,4 +552,64 @@ export function CreateOrientadorDialog({openDialog, setOpenDialog}:CreateDialogP
         </Dialog>
       );
 }
+export function EditCitaDialog({open, handleClose, cita, onSave}: EditCitaDialogProps) {
+  const [fecha, setFecha] = useState(cita?.fecha || '');
+  const [hora, setHora] = useState(cita?.hora || '');
+  const horasDisponibles = ['09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM'];
+  const fechaActual = new Date().toISOString().split("T")[0];
 
+  useEffect(() => {
+    if (cita) {
+      setFecha(cita.fecha);
+      setHora(cita.hora);
+    }
+  }, [cita]);
+
+  const handleSave = () => {
+    onSave({ fecha, hora });
+    handleClose();
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>Editar Cita</DialogTitle>
+      <DialogContent>
+        <TextField
+          margin="dense"
+          label="Fecha"
+          type="date"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+          fullWidth
+          InputLabelProps={{
+            shrink: true,
+          }}
+          inputProps={{
+            min: fechaActual,
+          }}
+        />
+        <Select
+          id="hora"
+          name="hora"
+          value={hora}
+          onChange={(e) => setHora(e.target.value)}
+          label="Hora"
+          fullWidth
+        >
+          {horasDisponibles.map((hora, index) => (
+            <MenuItem key={index} value={hora}>
+              {hora}
+            </MenuItem>
+          ))}
+        </Select>
+        <br/>
+        <Button variant="contained" color="primary" onClick={handleSave}>
+          Guardar
+        </Button>
+        <Button variant="outlined" color="secondary" onClick={handleClose}>
+          Cancelar
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+}

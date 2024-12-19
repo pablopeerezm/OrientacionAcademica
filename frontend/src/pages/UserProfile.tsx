@@ -1,19 +1,18 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
-import { CreateDialog, ProfileUserDialog } from "../components/Dialog";
+import { CreateDialog, ProfileUserDialog, EditCitaDialog } from "../components/Dialog";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import api from "../api/axios";
 
 export function UserProfile() {
 
-    const [user, setUser] = useState<string>("example@example.com")
-
     const [dialogLogOutIsVisible, setDialogLogOutIsVisible] = useState<boolean>(false);
     const [dialogCreateIsVisible, setDialogCreateIsVisible] = useState<boolean>(false);
+    const [dialogEditIsVisible, setDialogEditIsVisible] = useState<boolean>(false);
     const [citas, setCitas] = useState<any[]>([]);
-
+    const [selectedCita, setSelectedCita] = useState<any>(null);
 
     const columns: GridColDef[] = [
         {field:'orientador', headerName:'Orientador', flex:2},
@@ -34,10 +33,10 @@ export function UserProfile() {
           }}
     ];
 
-useEffect(() => {
-    const fetchCitas = async () => {
-        try {
-            const response = await api.get(`/citas/${sessionStorage.email}`, {
+    useEffect(() => {
+        const fetchCitas = async () => {
+            try {
+                const response = await api.get(`/citas/${sessionStorage.email}`, {
                 headers: {
                     'Authorization' : `Bearer ${sessionStorage.jwt}`
                 }
@@ -47,19 +46,20 @@ useEffect(() => {
         } catch (error) {
             console.log("Error al obtener citas", error)
         }
-    };
-    fetchCitas();
-}, [])
+        };
+        fetchCitas();
+    }, [])
 
     const rows: GridRowsProp = citas.map((cita, index) => ({
         id : index + 1,
         orientador : cita.orientador_email,
         dia : cita.fecha,
         hora: cita.hora
-
     }))
     function handleEditButton(id: number){
-
+        const citaToEdit = citas[id - 1];
+        setSelectedCita(citaToEdit)
+        setDialogEditIsVisible(true)
     }
     const handleDeleteButton = async (id: number) => {
         try {
@@ -71,23 +71,37 @@ useEffect(() => {
             console.error("Error al eliminar la cita:", error);
             alert("Error al eliminar la cita.");
         }
-        
     }
+    const handleSaveEdit = async (updatedCita: { fecha: string; hora: string }) => {
+        try {
+            const citaId = selectedCita._id;
+            await api.put(`/citas/${citaId}`, updatedCita, {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.jwt}`,
+                },
+            });
+            const updatedCitas = citas.map((cita) =>
+                cita._id === citaId ? { ...cita, ...updatedCita } : cita
+            );
+            setCitas(updatedCitas);
+            alert('Cita actualizada correctamente.');
+        } catch (error) {
+            console.error('Error al actualizar la cita:', error);
+            alert('Error al actualizar la cita.');
+        }
+    };
  
     return (
         <Box className="profilePage" >
             <Header/>
             <Button className="Usuario" 
                     variant="contained" 
-                    // color="warning" 
                     onClick={() => setDialogLogOutIsVisible(true)}
-                    // onClick={handleProfile}
                     sx={{display:'flex', 
                         justifyContent:'flex-end', 
                         backgroundColor:'transparent',
                         boxShadow:'none',
                         width:'100%'
-                        
                         }}>
                 <Typography
                     variant="h6"
@@ -123,6 +137,7 @@ useEffect(() => {
                 pagination
             />
             <CreateDialog openDialog={dialogCreateIsVisible} setOpenDialog={setDialogCreateIsVisible} /* urlDialog={urlPost} clientId={clientId}*/  />
+            <EditCitaDialog open={dialogEditIsVisible} handleClose={() => setDialogEditIsVisible(false)} cita={selectedCita} onSave={handleSaveEdit} />
             <Button variant="contained" 
                     color="warning" 
                     onClick={() => setDialogCreateIsVisible(true)}
